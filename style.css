@@ -9,8 +9,10 @@ body {
   background: #0f172a;
   overflow: hidden;
   font-family: Arial, sans-serif;
+  transition: filter 0.3s ease;
 }
 
+/* ------------------ JUEGO ------------------ */
 #game {
   position: relative;
   width: 100vw;
@@ -19,16 +21,19 @@ body {
   background: linear-gradient(to bottom, #1e293b, #0f172a);
 }
 
+/* ------------------ PUNTUACIÓN ------------------ */
 #score {
   position: fixed;
   top: 20px;
   left: 20px;
-  color: white;
+  color: #ffffff;
   font-size: 40px;
   font-weight: bold;
   z-index: 100;
+  text-shadow: 0 0 10px #22d3ee;
 }
 
+/* ------------------ PLAYER ------------------ */
 #player {
   position: absolute;
   width: 50px;
@@ -40,6 +45,7 @@ body {
   box-shadow: 0 0 20px #22d3ee;
 }
 
+/* ------------------ SUELO ------------------ */
 #ground {
   position: absolute;
   width: 100%;
@@ -49,16 +55,18 @@ body {
   border-top: 4px solid #38bdf8;
 }
 
+/* ------------------ OBSTÁCULOS ------------------ */
 .obstacle {
   position: absolute;
   width: 40px;
   height: 60px;
-  background: #ef4444;
   bottom: 90px;
+  background: #ef4444;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   box-shadow: 0 0 15px #ef4444;
 }
 
+/* ------------------ GAME OVER ------------------ */
 .hidden {
   display: none !important;
 }
@@ -73,13 +81,38 @@ body {
   align-items: center;
   color: white;
   z-index: 200;
+  text-align: center;
 }
 
 #gameOver h1 {
   font-size: 60px;
   margin-bottom: 20px;
+  text-shadow: 0 0 15px red;
 }
 
 #gameOver p {
-  font-size: 20px;
+  font-size: 22px;
+  margin: 5px 0;
+}
+
+/* ------------------ EFECTO MODO FURIA (opcional visual) ------------------ */
+body.fury {
+  filter: hue-rotate(90deg) saturate(1.5);
+}
+
+/* ------------------ RESPONSIVE ------------------ */
+@media (max-width: 600px) {
+  #score {
+    font-size: 30px;
+  }
+
+  #player {
+    width: 45px;
+    height: 45px;
+  }
+
+  .obstacle {
+    width: 35px;
+    height: 55px;
+  }
 }
