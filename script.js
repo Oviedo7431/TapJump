@@ -11,25 +11,85 @@ let jumping = false;
 let gameRunning = true;
 
 let score = 0;
-let speed = 6;
 
+// ------------------ DIFICULTAD ------------------
+let speed = 6;
+let baseDelay = 1400;
+
+// ------------------ RÉCORD ------------------
 let best = localStorage.getItem("best") || 0;
 
-// ------------------ SONIDOS ------------------
-const jumpSound = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
-const hitSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+// ------------------ MÚSICA ------------------
+const music = new Audio("https://cdn.pixabay.com/download/audio/2022/10/25/audio_3b1f8a0b7a.mp3?filename=arcade-loop-115747.mp3");
+music.loop = true;
+music.volume = 0.3;
 
 // ------------------ SALTO ------------------
 function jump() {
   if (!jumping && gameRunning) {
     velocity = 18;
     jumping = true;
-    jumpSound.play();
+
+    // 📱 vibración
+    if (navigator.vibrate) navigator.vibrate(30);
+
+    spawnParticles();
   }
 }
 
 document.addEventListener("touchstart", jump);
 document.addEventListener("mousedown", jump);
+
+// ------------------ PARTÍCULAS ------------------
+function spawnParticles() {
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement("div");
+    p.style.position = "absolute";
+    p.style.width = "6px";
+    p.style.height = "6px";
+    p.style.background = "#22d3ee";
+    p.style.left = "120px";
+    p.style.bottom = "120px";
+    p.style.borderRadius = "50%";
+    p.style.opacity = 1;
+
+    game.appendChild(p);
+
+    let x = 0;
+    let y = 0;
+
+    const interval = setInterval(() => {
+      x += (Math.random() - 0.5) * 6;
+      y += Math.random() * 4;
+
+      p.style.transform = `translate(${x}px, ${y}px)`;
+      p.style.opacity -= 0.05;
+
+      if (p.style.opacity <= 0) {
+        clearInterval(interval);
+        p.remove();
+      }
+    }, 20);
+  }
+}
+
+// ------------------ DIFICULTAD ------------------
+function updateDifficulty() {
+
+  speed = 6 + score * 0.15;
+  baseDelay = Math.max(450, 1400 - score * 12);
+
+  // ⚡ modo furia
+  if (score > 30) {
+    speed *= 1.3;
+    game.style.filter = "hue-rotate(90deg)";
+  } else {
+    game.style.filter = "none";
+  }
+
+  // 🎵 música más rápida
+  music.playbackRate = 1 + score * 0.01;
+}
 
 // ------------------ PLAYER ------------------
 function updatePlayer() {
@@ -47,6 +107,7 @@ function updatePlayer() {
 
 // ------------------ OBSTÁCULOS ------------------
 function createObstacle() {
+
   if (!gameRunning) return;
 
   const obstacle = document.createElement("div");
@@ -58,6 +119,7 @@ function createObstacle() {
   game.appendChild(obstacle);
 
   const move = setInterval(() => {
+
     if (!gameRunning) {
       clearInterval(move);
       return;
@@ -76,7 +138,6 @@ function createObstacle() {
       p.bottom > o.top;
 
     if (collision) {
-      hitSound.play();
       endGame();
     }
 
@@ -87,16 +148,13 @@ function createObstacle() {
       score++;
       scoreText.textContent = score;
 
-      // 🔥 dificultad progresiva
-      if (score % 10 === 0) {
-        speed += 0.5;
-      }
+      updateDifficulty();
     }
 
   }, 20);
 }
 
-// ------------------ SPAWN CONTROLADO ------------------
+// ------------------ SPAWN ------------------
 let canSpawn = true;
 
 function obstacleLoop() {
@@ -107,14 +165,14 @@ function obstacleLoop() {
     createObstacle();
     canSpawn = false;
 
-    const delay = 1200 + Math.random() * 800;
+    updateDifficulty();
 
     setTimeout(() => {
       canSpawn = true;
-    }, delay);
+    }, baseDelay);
   }
 
-  setTimeout(obstacleLoop, 100);
+  setTimeout(obstacleLoop, 80);
 }
 
 // ------------------ LOOP ------------------
@@ -130,7 +188,8 @@ function endGame() {
 
   gameRunning = false;
 
-  // 🏆 récord
+  music.pause();
+
   if (score > best) {
     best = score;
     localStorage.setItem("best", best);
@@ -143,13 +202,6 @@ function endGame() {
     <p>Toca para reiniciar</p>
   `;
 
-  // 💥 efecto visual
-  document.body.style.background = "red";
-
-  setTimeout(() => {
-    document.body.style.background = "#0f172a";
-  }, 200);
-
   gameOverScreen.classList.remove("hidden");
 }
 
@@ -161,12 +213,17 @@ function restartGame() {
   playerY = 0;
   velocity = 0;
   score = 0;
+
   speed = 6;
+  baseDelay = 1400;
 
   scoreText.textContent = score;
 
   gameRunning = true;
   gameOverScreen.classList.add("hidden");
+
+  music.currentTime = 0;
+  music.play();
 
   loop();
   obstacleLoop();
@@ -174,20 +231,7 @@ function restartGame() {
 
 gameOverScreen.addEventListener("click", restartGame);
 
-// ------------------ BOTÓN MÓVIL EXTRA ------------------
-const btn = document.createElement("button");
-btn.innerText = "SALTAR";
-btn.style.position = "fixed";
-btn.style.bottom = "20px";
-btn.style.left = "50%";
-btn.style.transform = "translateX(-50%)";
-btn.style.padding = "15px 40px";
-btn.style.fontSize = "20px";
-btn.style.zIndex = "999";
-
-btn.addEventListener("click", jump);
-document.body.appendChild(btn);
-
 // ------------------ START ------------------
+music.play();
 loop();
 obstacleLoop();
