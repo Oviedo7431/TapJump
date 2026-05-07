@@ -13,15 +13,19 @@ let score = 0;
 
 const groundHeight = 100;
 
+// ------------------ SALTO ------------------
+
 function jump() {
   if (!jumping && gameRunning) {
-    velocity = 18; // salto más fuerte
+    velocity = 18;
     jumping = true;
   }
 }
 
 document.addEventListener("touchstart", jump);
 document.addEventListener("mousedown", jump);
+
+// ------------------ PLAYER UPDATE ------------------
 
 function updatePlayer() {
   velocity -= gravity;
@@ -35,6 +39,8 @@ function updatePlayer() {
 
   player.style.bottom = (groundHeight + playerY) + "px";
 }
+
+// ------------------ OBSTÁCULOS ------------------
 
 function createObstacle() {
   if (!gameRunning) return;
@@ -80,6 +86,31 @@ function createObstacle() {
   }, 20);
 }
 
+// ------------------ SPAWN CONTROLADO ------------------
+
+let canSpawn = true;
+
+function obstacleLoop() {
+
+  if (!gameRunning) return;
+
+  if (canSpawn) {
+    createObstacle();
+
+    canSpawn = false;
+
+    const delay = 1400 + Math.random() * 800;
+
+    setTimeout(() => {
+      canSpawn = true;
+    }, delay);
+  }
+
+  setTimeout(obstacleLoop, 100);
+}
+
+// ------------------ GAME LOOP ------------------
+
 function loop() {
   if (!gameRunning) return;
 
@@ -87,21 +118,17 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-function obstacleLoop() {
-  if (!gameRunning) return;
-
-  createObstacle();
-
-  const time = 1000 + Math.random() * 1200;
-  setTimeout(obstacleLoop, time);
-}
+// ------------------ GAME OVER ------------------
 
 function endGame() {
   gameRunning = false;
   gameOverScreen.classList.remove("hidden");
 }
 
+// ------------------ RESTART ------------------
+
 function restartGame() {
+
   document.querySelectorAll(".obstacle").forEach(o => o.remove());
 
   playerY = 0;
@@ -117,7 +144,10 @@ function restartGame() {
   obstacleLoop();
 }
 
+// click/touch para reiniciar
 gameOverScreen.addEventListener("click", restartGame);
+
+// ------------------ START ------------------
 
 loop();
 obstacleLoop();
